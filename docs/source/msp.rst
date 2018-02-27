@@ -6,19 +6,24 @@ The document serves to provide details on the setup and best practices for MSPs.
 Membership Service Provider (MSP) is a component that aims to offer an
 abstraction of a membership operation architecture.
 
+会员服务提供商（MSP）是一个组件，旨在提供一个抽象成员操作体系结构。
+
 In particular, MSP abstracts away all cryptographic mechanisms and protocols
 behind issuing and validating certificates, and user authentication. An
 MSP may define their own notion of identity, and the rules by which those
 identities are governed (identity validation) and authenticated (signature
 generation and verification).
+特别是，MSP将发放和验证证书，以及用户认证的所有密码机制和协议抽象出来。一个MSP可以定义自有的身份概念，以及身份的管理（身份验证）和认证（签名生成和验证）规则。
 
 A Hyperledger Fabric blockchain network can be governed by one or more MSPs.
 This provides modularity of membership operations, and interoperability
 across different membership standards and architectures.
+Hyperledger Fabric区块链网络可以由一个或多个MSP管理。这提供了模块化的成员操作，并联通各种不同的成员标准和体系结构。
 
 In the rest of this document we elaborate on the setup of the MSP
 implementation supported by Hyperledger Fabric, and discuss best practices
 concerning its use.
+在本文的其余部分中，我们将详细介绍Hyperledger Fabric提供的MSP机制如何设置，并讨论它的最佳实践用法。
 
 MSP Configuration
 -----------------
@@ -28,6 +33,7 @@ locally at each peer and orderer (to enable peer, and orderer signing),
 and on the channels to enable peer, orderer, client identity validation, and
 respective signature verification (authentication) by and for all channel
 members.
+要设置MSP的实例，需要在每个peer和order的本地指定其配置（以启用peer和order的签名），并在各channel上启用peer，order，client的身份验证以及相应的签名验证（认证）为所有渠道成员提供服务。
 
 Firstly, for each MSP a name needs to be specified in order to reference that MSP
 in the network (e.g. ``msp1``, ``org2``, and ``org3.divA``). This is the name under
@@ -36,44 +42,65 @@ organization division is to be referenced in a channel. This is also referred
 to as the *MSP Identifier* or *MSP ID*. MSP Identifiers are required to be unique per MSP
 instance. For example, shall two MSP instances with the same identifier be
 detected at the system channel genesis, orderer setup will fail.
+首先，对于每个MSP，需要指定一个名称以代表网络中的MSP（例如``msp1``，`org2``和``org3.divA``）。这个名称对应了渠道中的MSP成员规则，代表了联盟，组织或组织部门。这也被称为* MSP标识符*或* MSP ID *。 MSP标识符必须是每个MSP实例唯一的。例如在系统channel初始化时，如果检测到具有相同标识符的两个MSP实例，order setup将会失败。
 
 In the case of default implementation of MSP, a set of parameters need to be
 specified to allow for identity (certificate) validation and signature
 verification. These parameters are deduced by
 `RFC5280 <http://www.ietf.org/rfc/rfc5280.txt>`_, and include:
+在MSP的默认实现中，需要指定一组参数以进行身份（证书）验证和签名验证。
 
 - A list of self-signed (X.509) certificates to constitute the *root of
   trust*
+  一组self-signed（X.509）证书构成的*根证书*
+  
 - A list of X.509 certificates to represent intermediate CAs this provider
   considers for certificate validation; these certificates ought to be
   certified by exactly one of the certificates in the root of trust;
   intermediate CAs are optional parameters
+  一组提供商用于证书验证的中间CA的X.509证书;这些证书应该由其中一个可信的根证书签发;中间CA是可选参数
+  
 - A list of X.509 certificates with a verifiable certificate path to
   exactly one of the certificates of the root of trust to represent the
   administrators of this MSP; owners of these certificates are authorized
   to request changes to this MSP configuration (e.g. root CAs, intermediate CAs)
+  一组代表该MSP的管理员的X.509证书，可验证的证书路径来自其中一个可信的根证书;这些证书的所有者有权请求更改此MSP配置（例如，根CA，中间CA）
+  
 - A list of Organizational Units that valid members of this MSP should
   include in their X.509 certificate; this is an optional configuration
   parameter, used when, e.g., multiple organisations leverage the same
   root of trust, and intermediate CAs, and have reserved an OU field for
   their members
+  MSP的有效成员应在其X.509证书中包含的组织单位列表;这是一个可选的配置参数，用于多个组织利用相同的根证书和中间CA，以及为其成员保留OU字段的情况
+  
 - A list of certificate revocation lists (CRLs) each corresponding to
   exactly one of the listed (intermediate or root) MSP Certificate
   Authorities; this is an optional parameter
+  证书撤销列表（CRLs），对应每个（中间或根）MSP证书颁发机构;这是一个可选参数
+  
 - A list of self-signed (X.509) certificates to constitute the *TLS root of
   trust* for TLS certificate.
+  一组作为* TLS根证书*的self-signed（X.509）证书，用于生成TLS证书。
+  
 - A list of X.509 certificates to represent intermediate TLS CAs this provider
   considers; these certificates ought to be
   certified by exactly one of the certificates in the TLS root of trust;
   intermediate CAs are optional parameters.
+  一组提供商用于证书验证的中间TLS CA的X.509证书;这些证书应该由其中一个可信的TLS根证书签发;中间CA是可选参数
 
 *Valid*  identities for this MSP instance are required to satisfy the following conditions:
+MSP实例的*有效*身份必须满足以下条件：
 
 - They are in the form of X.509 certificates with a verifiable certificate path to
   exactly one of the root of trust certificates;
+  它们的形式是X.509证书，其证书路径恰好是信任证书的根证书之一;
+  
 - They are not included in any CRL;
+  它们不包含在任何CRL中
+
 - And they *list* one or more of the Organizational Units of the MSP configuration
   in the ``OU`` field of their X.509 certificate structure.
+  并且他们在其X.509证书结构的“OU”字段中列出一个或多个MSP配置的组织单位。
 
 For more information on the validity of identities in the current MSP implementation,
 we refer the reader to :doc:`msp-identity-validity-rules`.
